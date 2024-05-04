@@ -172,7 +172,7 @@ with DAG(
         print(engine)
 
         # Save the top 20 products per advertiser to the RDS table 'top_product'
-        top_20_products_per_advertiser.to_sql('top_ctr', con=engine, if_exists='append', index=False)
+        top_20_ranking_with_date.to_sql('top_ctr', con=engine, if_exists='append', index=False)
 
         return
     
