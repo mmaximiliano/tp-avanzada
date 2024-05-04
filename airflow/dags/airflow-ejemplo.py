@@ -3,7 +3,7 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 import pandas as pd
 from io import StringIO
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 
 default_args = {
@@ -48,7 +48,7 @@ with DAG(
         
         ads_views, advertiser_ids, product_views=tuple(dfs)
 
-        today_date = datetime.now().strftime('%Y-%m-%d')- timedelta(days=1)
+        today_date = pd.Timestamp.now().date() - timedelta(days=1)
 
         ads_views_today = ads_views[ads_views['date'] == today_date]
         ads_views_filtered = ads_views_today[ads_views_today['advertiser_id'].isin(advertiser_ids['advertiser_id'])]
@@ -93,7 +93,7 @@ with DAG(
         top_20_products_per_advertiser = top_products[top_products['ranking'] <= 20]
         top_20_products_per_advertiser = top_20_products_per_advertiser.drop(columns='count')
 
-        today_date = datetime.now().strftime('%Y-%m-%d')- timedelta(days=1)
+        today_date = pd.Timestamp.now().date() - timedelta(days=1)
 
         # Assuming 'date' is a column in the original DataFrame df
         top_20_products_per_advertiser['date']=today_date
@@ -158,7 +158,7 @@ with DAG(
 
         top_20_ranking.drop(columns=['count_impressions', 'count_clicks','ctr'], inplace=True)
 
-        today_date = datetime.now().strftime('%Y-%m-%d')- timedelta(days=1)
+        today_date = pd.Timestamp.now().date() - timedelta(days=1)
 
         # Assuming 'date' is a column in the original DataFrame df
         top_20_ranking_with_date['date']=today_date
