@@ -49,12 +49,17 @@ with DAG(
         ads_views, advertiser_ids, product_views=tuple(dfs)
 
         today_date = pd.Timestamp.now().date() - timedelta(days=1)
+        today_date = today_date.strftime('%Y-%m-%d')
 
         ads_views_today = ads_views[ads_views['date'] == today_date]
         ads_views_filtered = ads_views_today[ads_views_today['advertiser_id'].isin(advertiser_ids['advertiser_id'])]
 
-        product_views_today = ads_views[product_views['date'] == today_date]
-        product_views_filtered = ads_views_today[product_views_today['advertiser_id'].isin(advertiser_ids['advertiser_id'])]
+        print(ads_views_filtered.head())
+
+        product_views_today = product_views[product_views['date'] == today_date]
+        product_views_filtered = product_views_today[product_views_today['advertiser_id'].isin(advertiser_ids['advertiser_id'])]
+
+        print(product_views_filtered.head())
 
         #los mando a S3
         csv_buffer_ads = StringIO()
@@ -94,13 +99,16 @@ with DAG(
         top_20_products_per_advertiser = top_20_products_per_advertiser.drop(columns='count')
 
         today_date = pd.Timestamp.now().date() - timedelta(days=1)
+        today_date = today_date.strftime('%Y-%m-%d')
 
         # Assuming 'date' is a column in the original DataFrame df
         top_20_products_per_advertiser['date']=today_date
         top_20_products_per_advertiser = top_20_products_per_advertiser[['date', 'advertiser_id', 'product_id', 'ranking']]
 
+        print(top_20_products_per_advertiser.head())
+
         # Connect to RDS
-        rds_connection_string = "postgres://postgres:postgres@db-tp-avanzada.c7o4g4e22k4y.us-east-1.rds.amazonaws.com:5432/postgres"
+        rds_connection_string = "postgresql://postgres:postgres@db-tp-avanzada.c7o4g4e22k4y.us-east-1.rds.amazonaws.com:5432/postgres"
         engine = create_engine(rds_connection_string)
         print(engine)
 
@@ -159,20 +167,23 @@ with DAG(
         top_20_ranking.drop(columns=['count_impressions', 'count_clicks','ctr'], inplace=True)
 
         today_date = pd.Timestamp.now().date() - timedelta(days=1)
+        today_date = today_date.strftime('%Y-%m-%d')
 
         # Assuming 'date' is a column in the original DataFrame df
-        top_20_ranking_with_date['date']=today_date
+        top_20_ranking['date']=today_date
 
         # Select only the desired columns and rearrange them
-        top_20_ranking_with_date = top_20_ranking_with_date[['date', 'advertiser_id', 'product_id', 'ranking']]
+        top_20_ranking = top_20_ranking[['date', 'advertiser_id', 'product_id', 'ranking']]
+
+        print(top_20_ranking.head())
 
         # Connect to RDS
-        rds_connection_string = "postgres://postgres:postgres@db-tp-avanzada.c7o4g4e22k4y.us-east-1.rds.amazonaws.com:5432/postgres"
+        rds_connection_string = "postgresql://postgres:postgres@db-tp-avanzada.c7o4g4e22k4y.us-east-1.rds.amazonaws.com:5432/postgres"
         engine = create_engine(rds_connection_string)
         print(engine)
 
         # Save the top 20 products per advertiser to the RDS table 'top_product'
-        top_20_ranking_with_date.to_sql('top_ctr', con=engine, if_exists='append', index=False)
+        top_20_ranking.to_sql('top_ctr', con=engine, if_exists='append', index=False)
 
         return
     
