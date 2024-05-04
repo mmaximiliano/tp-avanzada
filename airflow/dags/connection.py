@@ -20,4 +20,4 @@ print(f"{env_key}={conn_uri}")
 # AIRFLOW_CONN_SAMPLE_AWS_CONNECTION=aws://AKIAQ3EGSYYN2PEUP6W4:tCOgJ8f7HNYIK77208tIcSiydRFYrlW9d8oLK3nV@/?region_name=eu-central-1
 
 os.environ[env_key] = conn_uri
-print(conn.test_connection())  # Validate connection credentials.
+print(conn.test_connection())  # Validate connection credentials. 
