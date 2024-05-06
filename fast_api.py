@@ -33,17 +33,19 @@ def get_recommendations(advertiser_id: int, model: str):
     if connection is None:
         return {"message": "Failed to connect to the database"}
 
+    current_date = datetime.date.today()- datetime.timedelta(days=1) #voy a buscar datos del dia anterior
+
     try:
         cursor = connection.cursor()
 
         # Defino la query en base al modelo
         if model == "TopProduct":
 
-            query = f"SELECT product_id FROM top_product WHERE advertiser_id = '{advertiser_id}' AND date = CURRENT_DATE ORDER BY ranking LIMIT 20"
+            query = f"SELECT product_id FROM top_product WHERE advertiser_id = '{advertiser_id}' AND date = '{current_date}' ORDER BY ranking LIMIT 20"
         
         elif model == "TopCTR":
 
-            query = f"SELECT product_id FROM top_ctr WHERE advertiser_id = '{advertiser_id}' AND date = CURRENT_DATE ORDER BY ranking LIMIT 20"
+            query = f"SELECT product_id FROM top_ctr WHERE advertiser_id = '{advertiser_id}' AND date = '{current_date}' ORDER BY ranking LIMIT 20"
         
         else:
             return {"message": "Invalid model. Please choose either 'TopProduct' or 'TopCTR'"}
@@ -72,34 +74,38 @@ def get_recommendations(advertiser_id: int, model: str):
 @app.get("/history/{advertiser_id}")
 def get_history(advertiser_id: int):
     # Conección a la base
-    c
+    connection = connect_to_rds()
+    
     if connection is None:
         return {"message": "Failed to connect to the database"}
 
     try:
         cursor = connection.cursor()
 
-        # Obtener la fecha actual
+        # fecha actual
         current_date = datetime.date.today()
 
-        # Definir la fecha límite para el historial (últimos 7 días)
-        end_date = current_date
-        start_date = end_date - datetime.timedelta(days=6)
+        # Defino rango de fechas
+        end_date = current_date- datetime.timedelta(days=1)
+        start_date = end_date - datetime.timedelta(days=7)
 
-        # Inicializar un diccionario para almacenar las recomendaciones para cada día
+        # diccionario para guardar resultados
         history = {}
 
         for date in range((end_date - start_date).days + 1):
             # itero sobre las fechas
             date_iter = start_date + datetime.timedelta(days=date)
 
-            # Definir la query para obtener las recomendaciones para este día
+            # query para recomendaciones del dia
             query = f"SELECT product_id FROM top_product WHERE advertiser_id = '{advertiser_id}' AND date = '{date_iter}' ORDER BY ranking LIMIT 20"
             cursor.execute(query)
             records = cursor.fetchall()
 
-            # Almacenar las recomendaciones para este día en el diccionario de historial
-            history[str(date_iter)] = [record[0] for record in records]
+            # Almaceno recomendaciones del dia
+            if records:
+                history[str(date_iter)] = [record[0] for record in records]
+            else:
+                history[str(date_iter)] = "no data for this date"
 
         return history
     
@@ -124,25 +130,24 @@ def get_stats():
     try:
         cursor = connection.cursor()
 
-        # Obtener la fecha actual
-        current_date = datetime.date.today()
+        # Fecha para buscar datos
+        current_date = datetime.date.today()- datetime.timedelta(days=1)
 
-        # Cantidad de advertisers
-        cursor.execute("SELECT COUNT(DISTINCT advertiser_id) FROM top_product")
+        # Cantidad de advertisers activos
+        cursor.execute("SELECT COUNT(DISTINCT advertiser_id) FROM top_product WHERE date = %s", (current_date,))
         num_advertisers = cursor.fetchone()[0]
 
         # Advertisers que más varían sus recomendaciones por día
-        cursor.execute("SELECT advertiser_id, COUNT(DISTINCT date) AS num_dates FROM top_product GROUP BY advertiser_id ORDER BY num_dates DESC LIMIT 5")
+        cursor.execute('''SELECT advertiser_id
+                            FROM top_product
+                            GROUP BY advertiser_id
+                            ORDER BY COUNT(DISTINCT product_id) DESC
+                            LIMIT 3''')
         advertisers_most_varied = cursor.fetchall()
-
-        # Estadísticas de coincidencia entre ambos modelos para los diferentes advs.
-        cursor.execute("SELECT COUNT(*) FROM (SELECT advertiser_id FROM top_product INTERSECT SELECT advertiser_id FROM top_ctr) AS intersection")
-        num_shared_advertisers = cursor.fetchone()[0]
 
         return {
             "num_advertisers": num_advertisers,
-            "advertisers_most_varied": advertisers_most_varied,
-            "num_shared_advertisers": num_shared_advertisers
+            "advertisers_most_varied": advertisers_most_varied
         }
     
     except (Exception, psycopg2.Error) as error:
