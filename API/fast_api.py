@@ -1,6 +1,4 @@
 import pandas as pd
-import boto3
-from io import StringIO
 from fastapi import FastAPI
 import psycopg2
 import datetime
