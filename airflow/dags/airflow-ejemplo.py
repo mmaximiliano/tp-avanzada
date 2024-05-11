@@ -18,8 +18,8 @@ with DAG(
     dag_id='data_pipeline',
     default_args=default_args,
     description='Pipeline TP',
-    schedule='@daily',
-    start_date= datetime(2024, 4, 30),
+    schedule='0 4 * * *', #corre 4am
+    start_date= datetime(2024, 5, 2),
     catchup=False,
 ) as dag:
 
@@ -48,7 +48,7 @@ with DAG(
         
         ads_views, advertiser_ids, product_views=tuple(dfs)
 
-        today_date = pd.Timestamp.now().date() - timedelta(days=1)
+        today_date = pd.Timestamp.now().date() - timedelta(days=1) #leo datos del dia anterior
         today_date = today_date.strftime('%Y-%m-%d')
 
         ads_views_today = ads_views[ads_views['date'] == today_date]
