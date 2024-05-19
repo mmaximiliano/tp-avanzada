@@ -117,7 +117,7 @@ def get_history(advertiser_id: int):
             connection.close()
 
 
-#devuelve un json con numero de advertisers, 
+#devuelve un json con numero de advertisers y advertisers que más varían sus recomendaciones
 @app.get("/stats")
 def get_stats():
     # Conección a la base
