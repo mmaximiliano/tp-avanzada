@@ -70,7 +70,7 @@ def get_recommendations(advertiser_id: str, model: str):
 
 #historial de recomendaciones, 7 días, modelo top product
 @app.get("/history/{advertiser_id}")
-def get_history(advertiser_id: int):
+def get_history(advertiser_id: str):
     # Conección a la base
     connection = connect_to_rds()
     
