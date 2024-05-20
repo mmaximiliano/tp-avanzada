@@ -25,7 +25,7 @@ def connect_to_rds():
 
 #model=TopProduct o TopCTR
 
-def get_recommendations(advertiser_id: int, model: str):
+def get_recommendations(advertiser_id: str, model: str):
     # Conección a la base
     connection = connect_to_rds()
     if connection is None:
