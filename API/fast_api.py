@@ -25,7 +25,7 @@ def connect_to_rds():
 
 #model=TopProduct o TopCTR
 
-def get_recommendations(advertiser_id: str, model: str):
+def get_recommendations(advertiser_id: str = Path(..., description="The advertiser ID, which should be a string"), model: str = Path(..., description="Model type, either 'TopProduct' or 'TopCTR'")):
     # Conección a la base
     connection = connect_to_rds()
     if connection is None:
@@ -70,7 +70,7 @@ def get_recommendations(advertiser_id: str, model: str):
 
 #historial de recomendaciones, 7 días, modelo top product
 @app.get("/history/{advertiser_id}")
-def get_history(advertiser_id: str):
+def get_history(advertiser_id: str = Path(..., description="The advertiser ID, which should be a string")):
     # Conección a la base
     connection = connect_to_rds()
     
