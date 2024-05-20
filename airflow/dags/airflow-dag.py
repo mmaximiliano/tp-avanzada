@@ -29,7 +29,7 @@ with DAG(
         dfs = []  # lista de dfs
 
         s3_conn_id = 'aws_default'
-        bucket_name = 'tpudesa'
+        bucket_name = 'tpudesa2'
         s3_hook = S3Hook(aws_conn_id=s3_conn_id)
         s3_conn = s3_hook.get_conn()
         print(f"Connection to S3 established: {s3_conn}")
@@ -64,11 +64,11 @@ with DAG(
         #los mando a S3
         csv_buffer_ads = StringIO()
         ads_views_filtered.to_csv(csv_buffer_ads, index=False)
-        s3_hook.load_string(csv_buffer_ads.getvalue(), key='ads_filtered.csv', bucket_name='resultadosxdia', replace=True)
+        s3_hook.load_string(csv_buffer_ads.getvalue(), key='ads_filtered.csv', bucket_name='resultadostpxdia', replace=True)
 
         csv_buffer_product = StringIO()
         product_views_filtered.to_csv(csv_buffer_product, index=False)
-        s3_hook.load_string(csv_buffer_product.getvalue(), key='product_filtered.csv', bucket_name='resultadosxdia', replace=True)
+        s3_hook.load_string(csv_buffer_product.getvalue(), key='product_filtered.csv', bucket_name='resultadostpxdia', replace=True)
 
         return
 
@@ -80,7 +80,7 @@ with DAG(
     
     def top_product(**kwargs):
         s3_conn_id = 'aws_default'
-        bucket_name = 'resultadosxdia'
+        bucket_name = 'resultadostpxdia'
         key = 'product_filtered.csv'
         s3_hook = S3Hook(aws_conn_id=s3_conn_id)
         print(f"Reading CSV file from S3 bucket: {bucket_name}, key: {key}")
@@ -108,7 +108,7 @@ with DAG(
         print(top_20_products_per_advertiser.head())
 
         # Connect to RDS
-        rds_connection_string = "postgresql://postgres:postgres@db-tp-avanzada.c7o4g4e22k4y.us-east-1.rds.amazonaws.com:5432/postgres"
+        rds_connection_string = "postgresql://postgres:postgres@tp-rds.cdm2asygkn2c.us-east-1.rds.amazonaws.com:5432/postgres"
         engine = create_engine(rds_connection_string)
         print(engine)
 
@@ -125,7 +125,7 @@ with DAG(
 
     def top_ctr(**kwargs):
         s3_conn_id = 'aws_default'
-        bucket_name = 'resultadosxdia'
+        bucket_name = 'resultadostpxdia'
         key = 'ads_filtered.csv'
         s3_hook = S3Hook(aws_conn_id=s3_conn_id)
         print(f"Reading CSV file from S3 bucket: {bucket_name}, key: {key}")
@@ -178,7 +178,7 @@ with DAG(
         print(top_20_ranking.head())
 
         # Connect to RDS
-        rds_connection_string = "postgresql://postgres:postgres@db-tp-avanzada.c7o4g4e22k4y.us-east-1.rds.amazonaws.com:5432/postgres"
+        rds_connection_string = "postgresql://postgres:postgres@tp-rds.cdm2asygkn2c.us-east-1.rds.amazonaws.com:5432/postgres"
         engine = create_engine(rds_connection_string)
         print(engine)
 
