@@ -12,7 +12,7 @@ def connect_to_rds():
         connection = psycopg2.connect(
             user="postgres",
             password="postgres",
-            host="db-tp-avanzada.c7o4g4e22k4y.us-east-1.rds.amazonaws.com",
+            host="tp-rds.cdm2asygkn2c.us-east-1.rds.amazonaws.com",
             port="5432",
             database="postgres"
         )
